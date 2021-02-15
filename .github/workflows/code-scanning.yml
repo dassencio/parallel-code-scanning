@@ -1,0 +1,85 @@
+name: Code scanning
+
+#
+# Scan the code using CodeQL whenever new commits are pushed to the main branch
+# or whenever any activity happens inside a pull request targeting the main
+# branch. This workflow will only be executed if at least one modified file
+# resides outside the "docs" subdirectory and is not directly under the
+# repository's root directory.
+#
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+    - 'docs/**'
+    - '*'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+    - 'docs/**'
+    - '*'
+
+jobs:
+  generate-dir-list:
+    name: Generate directory list
+    runs-on: ubuntu-latest
+    outputs:
+      dir-list: ${{steps.find-dirs.outputs.dir-list}}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    #
+    # Generate a JSON array containing all non-hidden subdirectories of the
+    # repository's root directory and store it as a job output so it can be
+    # consumed by all downstream jobs depending on this one. For more
+    # information about this, visit:
+    #
+    # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
+    #
+    - name: Find existing directories
+      id: find-dirs
+      run: |
+        echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
+
+  codeql:
+    name: Scan code with CodeQL
+    needs: generate-dir-list
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
+        #
+        # Prevent the creation of jobs for directories where code scanning is
+        # not necessary/desired.
+        #
+        exclude:
+        - target-dir: docs
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    #
+    # Build the configuration file for CodeQL to instruct it to only scan the
+    # contents of a single directory. For more information about the
+    # configuration options available, visit:
+    #
+    # https://docs.github.com/en/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#using-a-custom-configuration-file
+    #
+    - name: Build CodeQL config file
+      env:
+        TARGET_DIR: ${{matrix.target-dir}}
+      run: |
+        cp .github/codeql/codeql-config-template.yml codeql-config.yml
+        sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        config-file: codeql-config.yml
+        languages: javascript
+
+    - name: Perform CodeQL analysis
+      uses: github/codeql-action/analyze@v1

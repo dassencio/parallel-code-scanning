@@ -1,0 +1,4 @@
+name: "CodeQL config"
+
+paths:
+  - __TARGET_DIR__
