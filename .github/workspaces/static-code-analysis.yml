@@ -1,0 +1,71 @@
+name: Static code analysis
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  generate-project-list:
+    name: Generate project list
+    runs-on: ubuntu-latest
+    outputs:
+      test-list: ${{steps.find-existing-tests.outputs.project-list}}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # 
+    # Generate a JSON array in the format ["project-1", "project-2", ...] and
+    # store the result as a job output so it can be consumed by all downstream
+    # jobs which depend on this one. For more information about this, visit:
+    # 
+    #   https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
+    #
+    # The generated array will contain all subdirectories directly under the
+    # repository's root directory matching the regex "project-*".
+    #
+    - name: Find existing projects
+      id: find-existing-projects
+      run: |
+        project_list=[$(echo project-* | sed -E -e 's/[[:alnum:]-]+/"&"/g' -e 's/ /, /g')]
+        echo "::set-output name=test-list::$project_list"
+
+  codeql:
+    name: Scan code with CodeQL
+    needs: generate-project-list
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project-dir: ${{fromJson(needs.generate-test-list.outputs.project-list)}}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # 
+    # Build the configuration file for CodeQL to instruct it to only scan the
+    # contents of a single directory. For more information about the 
+    # configuration options available, visit:
+    # 
+    # https://docs.github.com/en/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#using-a-custom-configuration-file
+    #
+    - name: Build CodeQL config file
+      env:
+        PROJECT_DIR: ${{matrix.project-dir}}
+      run: |
+        cp .github/codeql/codeql-config-template.yml /tmp/codeql.yml
+        sed -i 's@__TARGET_DIR__@'"$PROJECT_DIR"'@' /tmp/codeql.yml
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        config-file: /tmp/codeql.yml
+        languages: javascript
+        queries: security-and-quality
+
+    - name: Perform CodeQL analysis
+      uses: github/codeql-action/analyze@v1
