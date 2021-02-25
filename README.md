@@ -30,3 +30,37 @@ recognize certain types of vulnerabilities in that component. For instance, it
 may not be able to entirely map how data flows inside the component and
 therefore miss possible attacks against it. Please make sure you understand the
 general capabilities of CodeQL before doing this.
+
+## Answers to common questions
+
+**1.** _Even if files in only one subdirectory in the repository are changed,
+code scanning jobs will be generated for all subdirectories containing software
+projects, which is wasteful. Is it possible to limit the generation of jobs so
+that only subdirectories with modified files will be scanned?_
+
+Yes. The list of subdirectories which is used as input for the code scanning job
+matrix is produced by a [script](./.github/scripts/list-dirs) which simply
+outputs all subdirectories under the repository's root directory. This script
+can be modified in any way you want, so you can use [`git
+diff`](https://stackoverflow.com/questions/50440420/git-diff-only-show-which-directories-changed)
+to build a list containing only subdirectories with modified files and use that
+list as input for the job matrix generation.
+
+**2.** _Every code scanning job checks out the repository in parallel. If a
+change is made to the repository during that time (e.g. a subdirectory is added
+or removed, or a file in a pre-existing subdirectory is modified), you
+essentially have a race condition which is not being properly handled._
+
+This situation will not occur because the
+[`actions/checkout`](https://github.com/actions/checkout/) action only fetches a
+single commit by default, for the ref/SHA which triggered the workflow. This
+implies that the same code snapshot will be checked out in all jobs triggered
+inside the [`Code scanning`](.github/workflows/code-scanning.yml) workflow.
+
+If the amount of data fetched in each checkout step is large, you may get a
+performance improvement by generating an artifact containing the code in the
+very first job which is executed in the workflow and then consuming that
+artifact in all downstream jobs. The
+[`actions/upload-artifact`](https://github.com/actions/upload-artifact) and
+[`actions/download-artifact`](https://github.com/actions/download-artifact)
+actions will help you accomplish this.
