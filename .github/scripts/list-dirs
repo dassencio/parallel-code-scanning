@@ -1,9 +1,19 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 
-base=origin/main
-commit_sha=db8e0472559a23af3936656001da790d7943b0e8
+#
+# This script prints a JSON array containing all non-hidden subdirectories of
+# the current working directory. As an example, if the current working
+# directory contains the subdirectories "foo", "bar" and "baz", the output
+# will be (the order of the directories is not necessarily alphabetical):
+#
+# ["foo", "bar", "baz"]
+#
+import json
 
-filelist=`git diff --name-only $base $commit_sha`
-array=($filelist)
+lines = list(open('diff.txt').readlines())
+outlines = set()
 
-echo ${array[@]}
+for line in lines:
+    outlines.add(line.split('/')[0])
+
+print(json.dumps(list(outlines)))
