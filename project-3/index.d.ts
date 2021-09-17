@@ -1,5 +1,5 @@
 /**
-Basic foreground colors.
+Basic foreground colors. changes for testing
 
 [More colors here.](https://github.com/chalk/chalk/blob/main/readme.md#256-and-truecolor-color-support)
 */

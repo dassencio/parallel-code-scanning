@@ -29,6 +29,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     #
     # Generate a JSON array containing all non-hidden subdirectories of the
@@ -41,6 +43,7 @@ jobs:
     - name: Find existing directories
       id: find-dirs
       run: |
+        git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
         echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
   codeql:
@@ -54,8 +57,8 @@ jobs:
         # Prevent the creation of jobs for directories where code scanning is
         # not necessary/desired.
         #
-        exclude:
-        - target-dir: docs
+        #exclude:
+        #- target-dir: docs
 
     steps:
     - name: Checkout repository
