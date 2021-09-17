@@ -31,7 +31,7 @@ jobs:
       dir-list: ${{steps.find-dirs.outputs.dir-list}}
 
     steps:
-    if: ${{ github.event_name != 'pull_request'}}
+      if: ${{ github.event_name != 'pull_request'}}
 
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -44,7 +44,7 @@ jobs:
         echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
     steps:
-    if: ${{ github.event_name == 'pull_request'}}
+      if: ${{ github.event_name == 'pull_request'}}
 
     - name: Checkout repository
       uses: actions/checkout@v2
