@@ -1,5 +1,4 @@
 import createMathOperation from './.internal/createMathOperation.js'
-//changes for testing
 /**
  * Adds two numbers.
  *
