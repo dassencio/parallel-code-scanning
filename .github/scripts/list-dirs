@@ -10,7 +10,7 @@
 #
 import json
 
-lines = list(open('diff.txt').readlines())
+lines = list(open('./.github/scripts/diff.txt').readlines())
 outlines = set()
 
 for line in lines:
