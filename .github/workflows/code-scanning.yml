@@ -41,7 +41,7 @@ jobs:
     - name: Find existing directories
       id: find-dirs
       run: |
-        git diff --name-only $base $GITHUB_SHA >./.github/scripts/diff.txt
+        git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
         echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
   codeql:
