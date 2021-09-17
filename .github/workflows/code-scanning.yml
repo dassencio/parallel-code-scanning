@@ -1,4 +1,4 @@
-name: Code scanning
+name: Code scanning for all apps
 
 #
 # Scan the code using CodeQL whenever new commits are pushed to the main branch
@@ -18,47 +18,115 @@ on:
     paths-ignore:
     - 'docs/**'
     - '*'
+  schedule:
+    - cron: "35 13 * * 2"
+  workflow_dispatch:
+
 
 jobs:
   generate-dir-list:
+    # Find all the top level directories in the repostiory and use them for the scan
+    # when the workflow is not triggered by a pull_request
+    #
+    if: ${{ github.event_name != 'pull_request'}}
     name: Generate directory list
     runs-on: ubuntu-latest
     outputs:
       dir-list: ${{steps.find-dirs.outputs.dir-list}}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-    #
-    # Generate a JSON array containing all non-hidden subdirectories of the
-    # repository's root directory and store it as a job output so it can be
-    # consumed by all downstream jobs depending on this one. For more
-    # information about this, visit:
-    #
-    # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
-    #
-    - name: Find existing directories
-      id: find-dirs
-      run: |
-        git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
-        echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
+      - name: Find existing directories
+        id: find-dirs
+        run: |
+          echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
-  codeql:
-    name: Scan code with CodeQL
+  generate-changed-dir-list:
+    # Find only the changed top level directories and use them for the scan
+    # when the workflow is triggered by a pull_request
+    #
+    if: ${{ github.event_name == 'pull_request'}}
+    name: Generate changed directory list
+    runs-on: ubuntu-latest
+    outputs:
+      dir-list: ${{steps.find-dirs.outputs.dir-list}}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          
+      - name: Find changed directories
+        id: find-dirs
+        run: |
+          git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
+          echo "::set-output name=dir-list::$(./.github/scripts/list-changed-dirs)"
+
+      - name: Upload diff as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: diff
+          path: |
+            ./.github/scripts/diff.txt
+            
+
+
+  codeql-all-dirs:
+    name: Scan all directories with CodeQL
     needs: generate-dir-list
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
+
         #
         # Prevent the creation of jobs for directories where code scanning is
         # not necessary/desired.
         #
-        #exclude:
-        #- target-dir: docs
+        exclude:
+        - target-dir: docs
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    #
+    # Build the configuration file for CodeQL to instruct it to only scan the
+    # contents of a single directory. For more information about the
+    # configuration options available, visit:
+    #
+    # https://docs.github.com/en/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#using-a-custom-configuration-file
+    #
+    - name: Build CodeQL config file
+      env:
+        TARGET_DIR: ${{matrix.target-dir}}
+      run: |
+        cp .github/codeql/codeql-config-template.yml codeql-config.yml
+        sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v1
+      with:
+        config-file: codeql-config.yml
+        languages: javascript
+
+    - name: Perform CodeQL analysis
+      uses: github/codeql-action/analyze@v1
+
+  codeql-changed-dirs:
+    name: Scan all directories with CodeQL
+    needs: generate-changed-dir-list
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target-dir: ${{fromJson(needs.generate-changed-dir-list.outputs.dir-list)}}
 
     steps:
     - name: Checkout repository

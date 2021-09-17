@@ -1,1 +1,2 @@
 .github/scripts/diff.txt
+**/node_modules/**
