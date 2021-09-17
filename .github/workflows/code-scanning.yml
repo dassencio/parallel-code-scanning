@@ -72,7 +72,8 @@ jobs:
         with:
           name: diff
           path: |
-            ./.github/scripts/diff.txt            
+            ./.github/scripts/diff.txt
+            
 
 
   codeql-all-dirs:
@@ -122,7 +123,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
+        target-dir: ${{fromJson(needs.generate-changed-dir-list.outputs.dir-list)}}
 
     steps:
     - name: Checkout repository
