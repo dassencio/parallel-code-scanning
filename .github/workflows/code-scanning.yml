@@ -1,4 +1,4 @@
-name: Code scanning
+name: Code scanning for all apps
 
 #
 # Scan the code using CodeQL whenever new commits are pushed to the main branch
@@ -13,11 +13,10 @@ on:
     paths-ignore:
     - 'docs/**'
     - '*'
-  pull_request:
-    branches: [main]
-    paths-ignore:
-    - 'docs/**'
-    - '*'
+  schedule:
+    - cron: "35 13 * * 2"
+  workflow_dispatch:
+
 
 jobs:
   generate-dir-list:
@@ -43,7 +42,6 @@ jobs:
     - name: Find existing directories
       id: find-dirs
       run: |
-        git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
         echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
   codeql:

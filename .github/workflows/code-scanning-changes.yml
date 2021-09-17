@@ -8,11 +8,6 @@ name: Code scanning for changed apps
 # repository's root directory.
 #
 on:
-  push:
-    branches: [main]
-    paths-ignore:
-    - 'docs/**'
-    - '*'
   pull_request:
     branches: [main]
     paths-ignore:
