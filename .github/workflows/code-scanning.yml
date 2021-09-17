@@ -81,8 +81,10 @@ jobs:
     needs: generate-dir-list
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
+
         #
         # Prevent the creation of jobs for directories where code scanning is
         # not necessary/desired.
@@ -122,6 +124,7 @@ jobs:
     needs: generate-changed-dir-list
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         target-dir: ${{fromJson(needs.generate-changed-dir-list.outputs.dir-list)}}
 
