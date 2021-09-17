@@ -67,6 +67,14 @@ jobs:
           git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
           echo "::set-output name=dir-list::$(./.github/scripts/list-changed-dirs)"
 
+      - name: Upload diff as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: diff
+          path: |
+            ./.github/scripts/diff.txt            
+
+
   codeql-all-dirs:
     name: Scan all directories with CodeQL
     needs: generate-dir-list
