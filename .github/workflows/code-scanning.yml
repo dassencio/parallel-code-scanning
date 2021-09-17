@@ -13,6 +13,11 @@ on:
     paths-ignore:
     - 'docs/**'
     - '*'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+    - 'docs/**'
+    - '*'
   schedule:
     - cron: "35 13 * * 2"
   workflow_dispatch:
@@ -26,23 +31,33 @@ jobs:
       dir-list: ${{steps.find-dirs.outputs.dir-list}}
 
     steps:
+    if: ${{ github.event_name != 'pull_request'}}
+
     - name: Checkout repository
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
 
-    #
-    # Generate a JSON array containing all non-hidden subdirectories of the
-    # repository's root directory and store it as a job output so it can be
-    # consumed by all downstream jobs depending on this one. For more
-    # information about this, visit:
-    #
-    # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
-    #
     - name: Find existing directories
       id: find-dirs
       run: |
         echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
+
+    steps:
+    if: ${{ github.event_name == 'pull_request'}}
+
+    - name: Checkout repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Find changed directories
+      id: find-dirs
+      run: |
+        git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
+        echo "::set-output name=dir-list::$(./.github/scripts/list-changed-dirs)"
+
+
 
   codeql:
     name: Scan code with CodeQL
