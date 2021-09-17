@@ -8,12 +8,17 @@
 #
 # ["foo", "bar", "baz"]
 #
+from genericpath import isdir
 import json
+import os
 
 lines = list(open('./.github/scripts/diff.txt').readlines())
 outlines = set()
 
+#only add items that are directories
 for line in lines:
-    outlines.add(line.split('/')[0])
+    path = line.split('/')[0]
+    if (os.path.isdir(path)):
+        outlines.add(path)
 
 print(json.dumps(list(outlines)))
