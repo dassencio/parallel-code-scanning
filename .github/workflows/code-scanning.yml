@@ -25,39 +25,47 @@ on:
 
 jobs:
   generate-dir-list:
+    # Find all the top level directories in the repostiory and use them for the scan
+    # when the workflow is not triggered by a pull_request
+    #
+    if: ${{ github.event_name != 'pull_request'}}
     name: Generate directory list
     runs-on: ubuntu-latest
     outputs:
       dir-list: ${{steps.find-dirs.outputs.dir-list}}
 
     steps:
-      if: ${{ github.event_name != 'pull_request'}}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Find existing directories
+        id: find-dirs
+        run: |
+          echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
-    - name: Find existing directories
-      id: find-dirs
-      run: |
-        echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
+  generate-changed-dir-list:
+    # Find only the changed top level directories and use them for the scan
+    # when the workflow is triggered by a pull_request
+    #
+    if: ${{ github.event_name == 'pull_request'}}
+    name: Generate changed directory list
+    runs-on: ubuntu-latest
+    outputs:
+      dir-list: ${{steps.find-dirs.outputs.dir-list}}
 
     steps:
-      if: ${{ github.event_name == 'pull_request'}}
-
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-
-    - name: Find changed directories
-      id: find-dirs
-      run: |
-        git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
-        echo "::set-output name=dir-list::$(./.github/scripts/list-changed-dirs)"
-
-
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          
+      - name: Find changed directories
+        id: find-dirs
+        run: |
+          git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
+          echo "::set-output name=dir-list::$(./.github/scripts/list-changed-dirs)"
 
   codeql:
     name: Scan code with CodeQL
