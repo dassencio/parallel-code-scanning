@@ -9,7 +9,7 @@ name: Code scanning for all apps
 #
 on:
   push:
-    branches: [main]
+    branches: [main, dynamic-language-configuration]
     paths-ignore:
     - 'docs/**'
     - '*'
@@ -48,7 +48,7 @@ jobs:
 
       - id: set-matrix
         run: |
-          echo "::set-output name=matrix::{\"include\":[{\"languages\":\"javascript\",\"target-dir\":\"project-1\"},{\"languages\":\"javascript\",\"target-dir\":\"project-3\"},{\"languages\":\"python\",\"target-dir\":\"python-project\"}]}"
+          echo "::set-output name=matrix::$(./.github/scripts/list-changed-langs)"
 
 
   generate-changed-dir-list:
