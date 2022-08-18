@@ -97,9 +97,9 @@ jobs:
       matrix:
         include:
           - languages: javascript
-            target-dir: fromJSON(["project-1", "project-3"])
+            target-dir: fromJSON("[\"project-1\", \"project-3\"]")
           - languages: python
-            target-dir: fromJSON(["python-project"])
+            target-dir: fromJSON("[\"python-project\"]")
         # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
         # languages: ["javascript", "ruby"]
 
