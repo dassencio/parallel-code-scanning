@@ -97,9 +97,9 @@ jobs:
       matrix:
         include:
           - languages: javascript
-            config-file: ./.github/codeql/codeql-config-javascript.yml
+            target-dir: ["project-1", "project-3"]
           - languages: python
-            config-file: ./.github/codeql/codeql-config-python.yml
+            target-dir: ["python-project"]
         # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
         # languages: ["javascript", "ruby"]
 
@@ -121,12 +121,12 @@ jobs:
     #
     # https://docs.github.com/en/github/finding-security-vulnerabilities-and-errors-in-your-code/configuring-code-scanning#using-a-custom-configuration-file
     #
-    #- name: Build CodeQL config file
-    #  env:
-    #    TARGET_DIR: ${{matrix.target-dir}}
-    #  run: |
-    #    cp .github/codeql/codeql-config-template.yml codeql-config.yml
-    #    sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
+    - name: Build CodeQL config file
+      env:
+        TARGET_DIR: ${{matrix.target-dir}}
+      run: |
+        cp .github/codeql/codeql-config-template.yml codeql-config.yml
+        sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
