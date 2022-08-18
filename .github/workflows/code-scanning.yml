@@ -9,7 +9,7 @@ name: Code scanning for all apps
 #
 on:
   push:
-    branches: [main, dynamic-language-configuration]
+    branches: [main]
     paths-ignore:
     - 'docs/**'
     - '*'
@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           
@@ -88,7 +88,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     #
     # Build the configuration file for CodeQL to instruct it to only scan the
@@ -105,13 +105,13 @@ jobs:
         sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         config-file: codeql-config.yml
         languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
       with:
         category: ${{ matrix.target-dir }}-${{ matrix.languages }}
 
@@ -127,7 +127,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     #
     # Build the configuration file for CodeQL to instruct it to only scan the
@@ -144,12 +144,12 @@ jobs:
         sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         config-file: codeql-config.yml
         languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
       with:
         category: ${{ matrix.target-dir }}-${{ matrix.languages }}
