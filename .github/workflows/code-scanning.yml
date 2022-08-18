@@ -93,16 +93,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
-        languages: ["javascript", "ruby"]
+      matrix: ${{fromJson(needs.generate-dir-list.outputs.matrix}}
+        # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
+        # languages: ["javascript", "ruby"]
 
         #
         # Prevent the creation of jobs for directories where code scanning is
         # not necessary/desired.
         #
-        exclude:
-        - target-dir: docs
+       # exclude:
+       # - target-dir: docs
 
     steps:
     - name: Checkout repository
