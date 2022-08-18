@@ -47,7 +47,8 @@ jobs:
           echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
       - id: set-matrix
-        run: echo "::set-output name=matrix::{\"include\":[{\"languages\":\"javascript\",\"config-file\":\"./.github/codeql/codeql-config-javascript.yml\"},{\"languages\":\"python\",\"config-file\":\"./.github/codeql/codeql-config-\"}]}"
+        run: |
+          echo "::set-output name=matrix::{\"include\":[{\"languages\":\"javascript\",\"config-file\":\"./.github/codeql/codeql-config-javascript.yml\"},{\"languages\":\"python\",\"config-file\":\"./.github/codeql/codeql-config-\"}]}"
 
 
   generate-changed-dir-list:
@@ -93,7 +94,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate-dir-list.outputs.matrix}}
+      matrix: ${{ fromJson(needs.generate-dir-list.outputs.matrix) }}
         # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
         # languages: ["javascript", "ruby"]
 
