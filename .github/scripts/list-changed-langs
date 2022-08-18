@@ -4,7 +4,9 @@
 #
 # ["foo", "bar", "baz"]
 #
+from genericpath import isdir
 import json
+import os
 
 javascript = [".js", ".jsx", ".mjs", ".es", ".es6", ".htm", ".html", ".xhtm", ".xhtml", ".vue", ".hbs", ".ejs", ".njk", ".json", ".yaml", ".yml", ".raml", ".xml"]
 typescript = [".ts", ".tsx", ".mts", ".cts"]
@@ -15,9 +17,12 @@ python_lang = [".py"]
 java = [".java"]
 ruby = [".rb", ".erb", ".gemspec", "Gemfile"]
 
-
 lines = list(open("./.github/scripts/diff.txt").readlines())
-outlines = set()
+outlines = dict()
+
+def serialize_sets(obj):
+    if isinstance(obj, set):
+        return list(obj)
 
 def find_in_list(list, string):
     for item in list:
@@ -27,21 +32,38 @@ def find_in_list(list, string):
 
 #only add items that are directories
 for line in lines:
-    if find_in_list(javascript, line):
-        outlines.add("javascript")
-    if find_in_list(typescript, line):
-        outlines.add("javascript")
-    if find_in_list(c_and_cplus, line):
-        outlines.add("cpp")
-    if find_in_list(csharp, line):
-        outlines.add("csharp")
-    if find_in_list(golang, line):
-        outlines.add("go")
-    if find_in_list(python_lang, line):
-        outlines.add("python")
-    if find_in_list(java, line):
-        outlines.add("java")
-    if find_in_list(ruby, line):
-        outlines.add("ruby")
+    path = line.split('/')[0]
+    if find_in_list(javascript, line) and (os.path.isdir(path)):
+        if (outlines.get("javascript") == None):
+            outlines["javascript"] = set()
+        outlines["javascript"].add(path)
+    if find_in_list(typescript, line) and (os.path.isdir(path)):
+        if (outlines.get("javascript") == None):
+            outlines["javascript"] = set()
+        outlines["javascript"].add(path)
+    if find_in_list(c_and_cplus, line) and (os.path.isdir(path)):
+        if (outlines.get("cpp") == None):
+            outlines["cpp"] = set()
+        outlines["cpp"].add(path)
+    if find_in_list(csharp, line) and (os.path.isdir(path)):
+        if (outlines.get("csharp") == None):
+            outlines["csharp"] = set()
+        outlines["csharp"].add(path)
+    if find_in_list(golang, line) and (os.path.isdir(path)):
+        if (outlines.get("go") == None):
+            outlines["go"] = set()
+        outlines["go"].add(path)
+    if find_in_list(python_lang, line) and (os.path.isdir(path)):
+        if (outlines.get("python") == None):
+            outlines["python"] = set()
+        outlines["python"].add(path)
+    if find_in_list(java, line) and (os.path.isdir(path)):
+        if (outlines.get("java") == None):
+            outlines["java"] = set()
+        outlines["java"].add(path)
+    if find_in_list(ruby, line) and (os.path.isdir(path)):
+        if (outlines.get("ruby") == None):
+            outlines["ruby"] = set()
+        outlines["ruby"].add(path)
     
-print(json.dumps(list(outlines)))
+print(json.dumps(outlines, default=serialize_sets))

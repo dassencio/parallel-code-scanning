@@ -33,6 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       dir-list: ${{steps.find-dirs.outputs.dir-list}}
+      matrix: ${{steps.set-matrix.outputs.matrix}}
 
     steps:
       - name: Checkout repository
@@ -45,6 +46,10 @@ jobs:
         run: |
           echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
 
+      - id: set-matrix
+        run: echo "::set-output name=matrix::{\"include\":[{\"languages\":\"javascript\",\"config-file\":\"./.github/codeql/codeql-config-javascript.yml\"},{\"languages\":\"python\",\"config-file\":\"./.github/codeql/codeql-config-\"}]}"
+
+
   generate-changed-dir-list:
     # Find only the changed top level directories and use them for the scan
     # when the workflow is triggered by a pull_request
@@ -54,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       dir-list: ${{steps.find-dirs.outputs.dir-list}}
+      lang-list: ${{steps.find-langs.outputs.lang-list}}
 
     steps:
       - name: Checkout repository
@@ -66,6 +72,11 @@ jobs:
         run: |
           git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
           echo "::set-output name=dir-list::$(./.github/scripts/list-changed-dirs)"
+
+      - name: Find changed languages
+        id: find-langs
+        run: |
+          echo "::set-output name=lang-list::$(./.github/scripts/list-changed-langs)"
 
       - name: Upload diff as artifact
         uses: actions/upload-artifact@v2
@@ -84,6 +95,8 @@ jobs:
       fail-fast: false
       matrix:
         target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
+        languages: ["javascript", "ruby"]
+
         #
         # Prevent the creation of jobs for directories where code scanning is
         # not necessary/desired.
@@ -113,6 +126,7 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         config-file: codeql-config.yml
+        languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v2
@@ -125,6 +139,7 @@ jobs:
       fail-fast: false
       matrix:
         target-dir: ${{fromJson(needs.generate-changed-dir-list.outputs.dir-list)}}
+        languages: ${{fromJson(needs.generate-changed-dir-list.outputs.lang-list)}}
 
     steps:
     - name: Checkout repository
@@ -148,6 +163,7 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         config-file: codeql-config.yml
+        languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v2
