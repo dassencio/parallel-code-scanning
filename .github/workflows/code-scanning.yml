@@ -94,7 +94,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.generate-dir-list.outputs.matrix) }}
+      matrix:
+        include:
+          - languages: javascript
+            config-file: ./.github/codeql/codeql-config-javascript.yml
+          - languages: python
+            config-file: ./.github/codeql/codeql-config-python.yml
         # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
         # languages: ["javascript", "ruby"]
 
