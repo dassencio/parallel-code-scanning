@@ -42,7 +42,7 @@ jobs:
           fetch-depth: 0
 
       - name: Find existing directories
-      - id: set-matrix
+        id: set-matrix
         run: |
           echo "::set-output name=matrix::$(./.github/scripts/list-all)"
 
