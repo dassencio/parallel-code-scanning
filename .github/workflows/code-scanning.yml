@@ -63,15 +63,10 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Find changed directories
-        id: find-dirs
+      - name: Find changed apps
+        id: set-matrix
         run: |
           git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
-          echo "::set-output name=dir-list::$(./.github/scripts/list-changed-dirs)"
-
-      - name: Find changed languages
-        id: find-langs
-        run: |
           echo "::set-output name=matrix::$(./.github/scripts/list-changed)"
 
       - name: Upload diff as artifact
