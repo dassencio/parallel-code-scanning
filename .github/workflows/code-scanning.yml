@@ -97,9 +97,9 @@ jobs:
       matrix:
         include:
           - languages: javascript
-            target-dir: ["project-1", "project-3"]
+            target-dir: fromJSON(["project-1", "project-3"])
           - languages: python
-            target-dir: ["python-project"]
+            target-dir: fromJSON(["python-project"])
         # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
         # languages: ["javascript", "ruby"]
 
@@ -123,7 +123,7 @@ jobs:
     #
     - name: Build CodeQL config file
       env:
-        TARGET_DIR: ${{matrix.target-dir}}
+        TARGET_DIR: ${{ matrix.target-dir }}
       run: |
         cp .github/codeql/codeql-config-template.yml codeql-config.yml
         sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
