@@ -43,16 +43,16 @@ for line in lines:
     if find_in_list(typescript, line) and (os.path.isdir(path)):
         outlines["include"].add(tuple(dict({"target-dir": path, "languages": "javascript"}).items()))
     if find_in_list(c_and_cplus, line) and (os.path.isdir(path)):
-        outlines["include"].add(dict({"target-dir": path, "languages": "cpp"}))
+        outlines["include"].add(tuple(dict({"target-dir": path, "languages": "cpp"}).items()))
     if find_in_list(csharp, line) and (os.path.isdir(path)):
-        outlines["include"].add(dict({"target-dir": path, "languages": "csharp"}))
+        outlines["include"].add(tuple(dict({"target-dir": path, "languages": "csharp"}).items()))
     if find_in_list(golang, line) and (os.path.isdir(path)):
-        outlines["include"].add(dict({"target-dir": path, "languages": "go"}))
+        outlines["include"].add(tuple(dict({"target-dir": path, "languages": "go"}).items()))
     if find_in_list(python_lang, line) and (os.path.isdir(path)):
         outlines["include"].add(tuple(dict({"target-dir": path, "languages": "python"}).items()))
     if find_in_list(java, line) and (os.path.isdir(path)):
-        outlines["include"].add(dict({"target-dir": path, "languages": "java"}))
+        outlines["include"].add(tuple(dict({"target-dir": path, "languages": "java"}).items()))
     if find_in_list(ruby, line) and (os.path.isdir(path)):
-        outlines["include"].add(dict({"target-dir": path, "languages": "ruby"}))
+        outlines["include"].add(tuple(dict({"target-dir": path, "languages": "ruby"}).items()))
     
 print(json.dumps(outlines, default=serialize_sets))
