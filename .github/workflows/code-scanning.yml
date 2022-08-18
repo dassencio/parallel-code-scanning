@@ -42,13 +42,10 @@ jobs:
           fetch-depth: 0
 
       - name: Find existing directories
-        id: find-dirs
-        run: |
-          echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
-
       - id: set-matrix
         run: |
-          echo "::set-output name=matrix::$(./.github/scripts/list-changed-langs)"
+          echo "::set-output name=matrix::$(./.github/scripts/list-all)"
+
 
 
   generate-changed-dir-list:
@@ -95,23 +92,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.generate-dir-list.outputs.matrix)}}
-        # include:
-        #  - target-dir: "project-1"
-        #    languages: "javascript"
-        #  - target-dir: "project-3"
-        #    languages: "javascript"
-        #  - target-dir: "python-project"
-        #    languages: "python"
-
-        # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
-        # languages: ["javascript", "ruby"]
-
-        #
-        # Prevent the creation of jobs for directories where code scanning is
-        # not necessary/desired.
-        #
-       # exclude:
-       # - target-dir: docs
 
     steps:
     - name: Checkout repository
