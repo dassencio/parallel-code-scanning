@@ -96,10 +96,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - languages: javascript
-            target-dir: fromJSON("[\"project-1\", \"project-3\"]")
-          - languages: python
-            target-dir: fromJSON("[\"python-project\"]")
+          - target-dir: "project-1"
+            languages: "javascript"
+          - target-dir: project-3"
+            languages: "javascript"
+          - target-dir: "python-project"
+            languages: "python"
+
         # target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
         # languages: ["javascript", "ruby"]
 
