@@ -107,11 +107,13 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
-        config-file: ${{ matrix.config-file }}
+        config-file: codeql-config.yml
         languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v1
+      with:
+        category: ${{ matrix.target-dir }}-${{ matrix.languages }}
 
 
 
@@ -144,8 +146,10 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
-        config-file: ${{ matrix.config-file }}
+        config-file: codeql-config.yml
         languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v1
+      with:
+        category: ${{ matrix.target-dir }}-${{ matrix.languages }}
