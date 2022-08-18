@@ -98,7 +98,7 @@ jobs:
         include:
           - target-dir: "project-1"
             languages: "javascript"
-          - target-dir: project-3"
+          - target-dir: "project-3"
             languages: "javascript"
           - target-dir: "python-project"
             languages: "python"
