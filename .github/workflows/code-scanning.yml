@@ -84,7 +84,7 @@ jobs:
 
 
   codeql-all-dirs:
-    name: Scan all directories with CodeQL
+    name: Scanning ${{matrix.target-dir}} with CodeQL
     needs: generate-dir-list
     runs-on: ubuntu-latest
     strategy:
@@ -121,7 +121,7 @@ jobs:
 
 
   codeql-changed-dirs:
-    name: Scan all directories with CodeQL
+    name: Scanning ${{matrix.target-dir}} with CodeQL
     needs: generate-changed-dir-list
     runs-on: ubuntu-latest
     strategy:
