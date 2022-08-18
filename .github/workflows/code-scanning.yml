@@ -84,8 +84,6 @@ jobs:
       fail-fast: false
       matrix:
         target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
-        languages: ["javascript", "ruby"]
-
         #
         # Prevent the creation of jobs for directories where code scanning is
         # not necessary/desired.
@@ -115,7 +113,6 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         config-file: codeql-config.yml
-        languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v2
@@ -151,7 +148,6 @@ jobs:
       uses: github/codeql-action/init@v2
       with:
         config-file: codeql-config.yml
-        languages: javascript
 
     - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v2
