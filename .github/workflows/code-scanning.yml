@@ -32,7 +32,6 @@ jobs:
     name: Generate directory list
     runs-on: ubuntu-latest
     outputs:
-      dir-list: ${{steps.find-dirs.outputs.dir-list}}
       matrix: ${{steps.set-matrix.outputs.matrix}}
 
     steps:
@@ -56,8 +55,7 @@ jobs:
     name: Generate changed directory list
     runs-on: ubuntu-latest
     outputs:
-      dir-list: ${{steps.find-dirs.outputs.dir-list}}
-      lang-list: ${{steps.find-langs.outputs.lang-list}}
+      matrix: ${{steps.set-matrix.outputs.matrix}}
 
     steps:
       - name: Checkout repository
@@ -74,7 +72,7 @@ jobs:
       - name: Find changed languages
         id: find-langs
         run: |
-          echo "::set-output name=lang-list::$(./.github/scripts/list-changed-langs)"
+          echo "::set-output name=matrix::$(./.github/scripts/list-changed)"
 
       - name: Upload diff as artifact
         uses: actions/upload-artifact@v2
@@ -91,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.generate-dir-list.outputs.matrix)}}
+      matrix: ${{ fromJson(needs.generate-dir-list.outputs.matrix) }}
 
     steps:
     - name: Checkout repository
@@ -120,15 +118,15 @@ jobs:
     - name: Perform CodeQL analysis
       uses: github/codeql-action/analyze@v1
 
+
+
   codeql-changed-dirs:
     name: Scan all directories with CodeQL
     needs: generate-changed-dir-list
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        target-dir: ${{fromJson(needs.generate-changed-dir-list.outputs.dir-list)}}
-        languages: ${{fromJson(needs.generate-changed-dir-list.outputs.lang-list)}}
+      matrix: ${{ fromJson(needs.generate-dir-list.outputs.matrix) }}
 
     steps:
     - name: Checkout repository
@@ -151,7 +149,7 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
-        config-file: codeql-config.yml
+        config-file: ${{ matrix.config-file }}
         languages: ${{ matrix.languages }}
 
     - name: Perform CodeQL analysis
