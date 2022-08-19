@@ -31,11 +31,10 @@ def serialize_sets(obj):
 
 def find_in_list(list, string):
     for item in list:
-        if item in string:
+        if string.strip().endswith(item):
             return True
     return False
 
-#only add items that are directories
 for line in glob.glob('**', recursive=True):
     path = line.split('/')[0]
     if find_in_list(javascript, line) and (os.path.isdir(path)):
