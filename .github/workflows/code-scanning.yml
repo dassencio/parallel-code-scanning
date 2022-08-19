@@ -58,8 +58,8 @@ jobs:
           ALL: ${{ steps.find-all.outputs.all }}
           CHANGED: ${{ steps.find-changed.outputs.changed }}
         run: |
-          echo "::debug::All set to $ALL"
-          echo "::debug::Changed set to $CHANGED"
+          echo "::notice::All set to $ALL"
+          echo "::notice::Changed set to $CHANGED"
           echo "::set-output name=matrix::$ALL$CHANGED"
 
       - name: Upload diff as artifact
