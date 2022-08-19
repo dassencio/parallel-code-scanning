@@ -60,7 +60,7 @@ jobs:
         run: |
           echo "::debug::All set to $ALL"
           echo "::debug::Changed set to $CHANGED"
-        #  echo "::set-output name=matrix::$MATRIX"
+          echo "::set-output name=matrix::$ALL$CHANGED"
 
       - name: Upload diff as artifact
         if: ${{ github.event_name == 'pull_request'}} 
