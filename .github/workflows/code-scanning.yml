@@ -55,8 +55,8 @@ jobs:
       - name: Find existing directories
         id: set-matrix
         env:
-          ALL: ${{ steps.find-all.output.all }}
-          CHANGED: ${{ steps.find-changed.output.changed }}
+          ALL: ${{ steps.find-all.outputs.all }}
+          CHANGED: ${{ steps.find-changed.outputs.changed }}
         run: |
           echo "::debug::All set to $ALL"
           echo "::debug::Changed set to $CHANGED"
