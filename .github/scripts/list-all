@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 #
-# This script prints a JSON array containing all the supported CodeQL programming languages based on the file extension
+# This script prints a JSON representation of an include matrix that will create a job for each top level folder/language combination detected in the repository.
 #
-# ["foo", "bar", "baz"]
+# {"include": [{"target-dir": ".github", "languages": "javascript"}, {"target-dir": "project with spaces", "languages": "javascript"}, {"target-dir": "project-1", "languages": "javascript"}, {"target-dir": "python-project", "languages": "python"}]}
 #
+
 from genericpath import isdir
 import json
 import os
