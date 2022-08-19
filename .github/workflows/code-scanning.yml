@@ -28,7 +28,6 @@ jobs:
     # Find all the top level directories in the repostiory and use them for the scan
     # when the workflow is not triggered by a pull_request
     #
-    if: ${{ github.event_name != 'pull_request'}}
     name: Generate directory list
     runs-on: ubuntu-latest
     outputs:
@@ -40,11 +39,34 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Find all apps
+        if: ${{ github.event_name != 'pull_request'}}        
+        id: find-all
+        run: |
+          echo "::set-output name=all::$(./.github/scripts/list-all)"
+      
+      - name: Find changed apps
+        if: ${{ github.event_name == 'pull_request'}}        
+        id: find-changed
+        run: |
+          git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
+          echo "::set-output name=changed::$(./.github/scripts/list-changed)"
+
       - name: Find existing directories
         id: set-matrix
+        env:
+          MATRIX: ${{ steps.find-all.all || steps.find-changed.changed }}
         run: |
-          echo "::set-output name=matrix::$(./.github/scripts/list-all)"
+          echo "::set-output name=matrix::$MATRIX"
+          echo "::debug::Matrix set to $MATRIX"
 
+      - name: Upload diff as artifact
+        if: ${{ github.event_name == 'pull_request'}} 
+        uses: actions/upload-artifact@v2
+        with:
+          name: diff
+          path: |
+            ./.github/scripts/diff.txt
 
 
   generate-changed-dir-list:
