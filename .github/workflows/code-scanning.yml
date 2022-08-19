@@ -55,10 +55,12 @@ jobs:
       - name: Find existing directories
         id: set-matrix
         env:
-          MATRIX: ${{ steps.find-all.all || steps.find-changed.changed }}
+          ALL: ${{ steps.find-all.all }}
+          CHANGED: ${{ steps.find-changed.changed }}
         run: |
-          echo "::set-output name=matrix::$MATRIX"
-          echo "::debug::Matrix set to $MATRIX"
+          echo "::debug::All set to $ALL"
+          echo "::debug::Changed set to $CHANGED"
+        #  echo "::set-output name=matrix::$MATRIX"
 
       - name: Upload diff as artifact
         if: ${{ github.event_name == 'pull_request'}} 
