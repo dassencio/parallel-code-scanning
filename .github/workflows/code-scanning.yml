@@ -105,7 +105,7 @@ jobs:
         languages: ${{ matrix.languages }}
 
     - name: Attempting build
-      if: ${{ matrix.languages == 'cpp' }} || ${{ matrix.languages == 'csharp' }} || ${{ matrix.languages == 'java' }}
+      if: ${{ matrix.languages == 'cpp' }}
       uses: github/codeql-action/autobuild@v2
 
     - name: Perform CodeQL analysis
