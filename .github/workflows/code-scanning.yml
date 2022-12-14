@@ -1,4 +1,4 @@
-name: Code scanning
+name: Code scanning for all apps
 
 #
 # Scan the code using CodeQL whenever new commits are pushed to the main branch
@@ -18,48 +18,71 @@ on:
     paths-ignore:
     - 'docs/**'
     - '*'
+  schedule:
+    - cron: "35 13 * * 2"
+  workflow_dispatch:
+
 
 jobs:
-  generate-dir-list:
+  generate-scan-list:
+    # Find all the top level directories in the repostiory and use them for the scan
+    # when the workflow is not triggered by a pull_request
+    #
     name: Generate directory list
     runs-on: ubuntu-latest
     outputs:
-      dir-list: ${{steps.find-dirs.outputs.dir-list}}
+      matrix: ${{steps.set-matrix.outputs.matrix}}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    #
-    # Generate a JSON array containing all non-hidden subdirectories of the
-    # repository's root directory and store it as a job output so it can be
-    # consumed by all downstream jobs depending on this one. For more
-    # information about this, visit:
-    #
-    # https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#jobsjob_idoutputs
-    #
-    - name: Find existing directories
-      id: find-dirs
-      run: |
-        echo "::set-output name=dir-list::$(./.github/scripts/list-dirs)"
+      - name: Find all apps
+        if: ${{ github.event_name != 'pull_request'}}        
+        id: find-all
+        run: |
+          echo "::set-output name=all::$(./.github/scripts/list-all)"
+      
+      - name: Find changed apps
+        if: ${{ github.event_name == 'pull_request'}}        
+        id: find-changed
+        run: |
+          git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA >./.github/scripts/diff.txt
+          echo "::set-output name=changed::$(./.github/scripts/list-changed)"
 
-  codeql:
-    name: Scan code with CodeQL
-    needs: generate-dir-list
+      - name: Setup scanning matrix
+        id: set-matrix
+        env:
+          ALL: ${{ steps.find-all.outputs.all }}
+          CHANGED: ${{ steps.find-changed.outputs.changed }}
+        run: |
+          echo "::set-output name=matrix::$ALL$CHANGED"
+          echo "::notice::All set to $ALL"
+          echo "::notice::Changed set to $CHANGED"
+
+      - name: Upload diff as artifact
+        if: ${{ github.event_name == 'pull_request'}} 
+        uses: actions/upload-artifact@v2
+        with:
+          name: diff
+          path: |
+            ./.github/scripts/diff.txt
+
+
+
+  codeql-scan:
+    name: Scanning ${{matrix.target-dir}} (${{ matrix.languages }}) with CodeQL
+    needs: generate-scan-list
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        target-dir: ${{fromJson(needs.generate-dir-list.outputs.dir-list)}}
-        #
-        # Prevent the creation of jobs for directories where code scanning is
-        # not necessary/desired.
-        #
-        exclude:
-        - target-dir: docs
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-scan-list.outputs.matrix) }}
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     #
     # Build the configuration file for CodeQL to instruct it to only scan the
@@ -70,16 +93,22 @@ jobs:
     #
     - name: Build CodeQL config file
       env:
-        TARGET_DIR: ${{matrix.target-dir}}
+        TARGET_DIR: ${{ matrix.target-dir }}
       run: |
         cp .github/codeql/codeql-config-template.yml codeql-config.yml
         sed -i 's@__TARGET_DIR__@'"$TARGET_DIR"'@' codeql-config.yml
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         config-file: codeql-config.yml
-        languages: javascript
+        languages: ${{ matrix.languages }}
+
+    - name: Attempting build
+      if: ${{ (matrix.languages == 'cpp' || matrix.languages == 'csharp' || matrix.languages == 'java') }}
+      uses: github/codeql-action/autobuild@v2
 
     - name: Perform CodeQL analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2
+      with:
+        category: ${{ matrix.target-dir }}-${{ matrix.languages }}

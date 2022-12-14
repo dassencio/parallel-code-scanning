@@ -1,5 +1,7 @@
 # Parallel code scanning with CodeQL
 
+https://github.com/thedave42/parallel-code-scanning/labels/documentation
+
 If you have a large repository containing various independent projects (a
 "monorepo"), the time taken to scan your code with CodeQL can be significantly
 reduced by splitting the scanning work into various parallel jobs which will
@@ -20,6 +22,11 @@ this repository (e.g. `project-4`) requires no changes to the workflow file as a
 dedicated code scanning job will be automatically generated for it when the
 workflow is executed.
 
+If the workflow is triggered by a pull request the list of sub-directories that 
+will be scanned will be limited to the subdirectories that contain changes. The 
+changes are based on a `git diff` between the base and head repositories specified
+in the pull request.  
+
 This strategy is possible because GitHub Actions workflows accept JSON input to
 define a job matrix, and  the JSON contents can be generated during the
 workflow's execution. In other words, the job matrix can be defined dynamically.
@@ -33,20 +40,7 @@ general capabilities of CodeQL before doing this.
 
 ## Answers to common questions
 
-**1.** _Even if files in only one subdirectory in the repository are changed,
-code scanning jobs will be generated for all subdirectories containing software
-projects, which is wasteful. Is it possible to limit the generation of jobs so
-that only subdirectories with modified files will be scanned?_
-
-Yes. The list of subdirectories which is used as input for the code scanning job
-matrix is produced by a [script](./.github/scripts/list-dirs) which simply
-outputs all subdirectories under the repository's root directory. This script
-can be modified in any way you want, so you can use [`git
-diff`](https://stackoverflow.com/questions/50440420/git-diff-only-show-which-directories-changed)
-to build a list containing only subdirectories with modified files and use that
-list as input for the job matrix generation.
-
-**2.** _Every code scanning job checks out the repository in parallel. If a
+**1.** _Every code scanning job checks out the repository in parallel. If a
 change is made to the repository during that time (e.g. a subdirectory is added
 or removed, or a file in a pre-existing subdirectory is modified), you
 essentially have a race condition which is not being properly handled._
