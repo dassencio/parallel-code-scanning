@@ -1,5 +1,7 @@
 # Parallel code scanning with CodeQL
 
+https://github.com/thedave42/parallel-code-scanning/labels/documentation
+
 If you have a large repository containing various independent projects (a
 "monorepo"), the time taken to scan your code with CodeQL can be significantly
 reduced by splitting the scanning work into various parallel jobs which will
